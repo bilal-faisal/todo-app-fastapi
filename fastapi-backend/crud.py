@@ -24,8 +24,8 @@ def get_user_id(
         if user_id is None:
             return {"status" : "existing_user", "message" : "Email already exists", "user_id": user_id}
 
-        # if not exists, generate user_id and return it
-        user_id = generate_user_id()
+        # TODO: if not exists, insert name and email and return user_id
+        user_id = ""
 
         return {"user_id" : user_id}
     
@@ -37,13 +37,13 @@ def get_user_id(
 @app.get("/todos")
 def get_todos(user_id: str = Header(default=None)) -> dict:
     if user_id:
-        # TODO validate whether user_id exists in database
+        # TODO: validate whether user_id exists in database
         exists : bool = True
 
-        if exists:
+        if not exists:
             return {"status": "error", "message" : "Invalid user_id"}
         
-        # TODO get all todos on the basis of user_id
+        # TODO: get all todos on the basis of user_id
         todos : list[dict] = []
         return {"status": "success", "todos" : todos, "user_id" : user_id}
         
@@ -59,14 +59,14 @@ def post_todo(
         user_id: str = Header(default=None)
     ):
     if user_id:
-        # TODO Validate whether user_id exists in database
+        # TODO: Validate whether user_id exists in database
         exists:bool = True
 
         if not exists:
             return {"status": "error", "message" : "Invalid user_id"}
 
-        todo_id = generate_todo_id()
-        # TODO post the todo on the basis of user_id
+        # TODO: post the todo on the basis of user_id and get todo_id
+        todo_id = ""
         return {"message" : "Todo Posted", "todo_id" : todo_id, "user_id" : user_id}
         
     else:
@@ -78,13 +78,13 @@ def post_todo(
 @app.delete("/todo")
 def delete_todo(todo_id:int = Body(embed=True), user_id: str = Header(default=None)):
     if user_id:
-        # TODO Validate whether user_id exists in database
+        # TODO: Validate whether user_id exists in database
         exists : bool = True
 
         if not exists:
             return {"status": "error", "message" : "Invalid user_id"}
 
-        # TODO delete the todo on the basis of user_id and todo_id
+        # TODO: delete the todo on the basis of user_id and todo_id
         return {"message" : "Todo Deleted", "todo_id" : todo_id, "user_id" : user_id}
         
     else:
@@ -96,46 +96,15 @@ def delete_todo(todo_id:int = Body(embed=True), user_id: str = Header(default=No
 @app.patch("/todo")
 def update_todo(todo_id:int = Body(), todo:dict = Body(), user_id: str = Header(default=None)):
     if user_id:
-        # TODO Validate whether user_id exists in database
+        # TODO: Validate whether user_id exists in database
         exists:bool = True
 
         if not exists:
             return {"status": "error", "message" : "Invalid user_id"} 
         
-        # TODO update the todo on the basis of user_id and todo_id
+        # TODO: update the todo on the basis of user_id and todo_id
         return {"message" : "Todo Updated", "todo_id" : todo_id, "todo" : todo, "user_id" : user_id}
     
     else:
         # if not exists, return error message
         return {"status": "error", "message" : "user_id not provided"}
-
-
-def generate_user_id()->str:
-    while True:
-        # Generate 6 digit random number as user_id
-        user_id = ""
-        for i in range(6):
-            user_id += str(random.randint(0,9))
-    
-        # TODO: check if user_id already exists in database
-        user_id_exists = False
-        
-        if user_id_exists:
-            continue
-        else:
-            return user_id
-
-def generate_todo_id()->str:
-    while True:
-        # Generate 6 digit random number as todo_id
-        todo_id = ""
-        for i in range(4):
-            todo_id += str(random.randint(0,9))
-    
-        # TODO: check if todo_id already exists in database
-        todo_id_exists = False
-        
-        if todo_id_exists:
-            continue
-        else:
-            return todo_id
