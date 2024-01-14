@@ -1,5 +1,5 @@
-import data
 from fastapi import FastAPI, Body, Header
+import data
 
 # Application initialization
 data.create_tables_if_not_exists()

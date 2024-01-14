@@ -4,3 +4,4 @@ requests
 fastapi
 python-dotenv
 httpie
+pytest
