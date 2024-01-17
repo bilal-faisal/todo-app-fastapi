@@ -1,13 +1,8 @@
 from fastapi.testclient import TestClient
+from app.utils import generate_N_digits
 from app.crud import app
-from random import randint
 
 client = TestClient(app)
-
-def random_with_N_digits(n):
-    range_start = 10**(n-1)
-    range_end = (10**n)-1
-    return randint(range_start, range_end)
 
 # GET/
 
@@ -19,7 +14,7 @@ def test_base_route():
 # POST/user
 
 def test_add_new_user_success():
-    response = client.post("/user", json={"name": "Test User", "email": f"{random_with_N_digits(10)}@test.com"})
+    response = client.post("/user", json={"name": "Test User", "email": f"test{generate_N_digits(10)}@test.com"})
     assert response.status_code == 200
     assert response.json()["status"] == "success"
     assert "user_id" in response.json()
@@ -163,3 +158,38 @@ def test_update_todo_invalid_todo_id():
     assert response.status_code == 422
     assert response.json()["detail"][0]["type"] == "int_parsing"
 
+# DELETE/todo
+
+def test_delete_todo_success():
+    response = client.post("/todo", json={"title": "Test Todo", "description": "This is a test todo"}, headers={"user-id":"20"})
+    todo_id = response.json()["todo_id"]
+
+    response = client.delete(f"/todo/{todo_id}", headers={"user-id":"20"})
+    assert response.status_code == 200
+    assert response.json()["status"] == "success"
+    assert "todo_id" in response.json()
+
+def test_delete_todo_invalid_user_id():
+    response = client.delete("/todo/10", headers={"user-id":"invalid"})
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["type"] == "int_parsing"
+
+def test_delete_todo_user_id_not_exists():
+    response = client.delete("/todo/10", headers={"user-id":"10000000"})
+    assert response.json()["status"] == "error"
+    assert response.json()["message"] == "Invalid user_id or todo_id."
+
+def test_delete_todo_todo_id_not_exists():
+    response = client.delete("/todo/1000000", headers={"user-id":"20"})
+    assert response.json()["status"] == "error"
+    assert response.json()["message"] == "Invalid user_id or todo_id."
+
+def test_delete_todo_missing_user_id():
+    response = client.delete("/todo/10")
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["type"] == "missing"
+
+def test_delete_todo_missing_todo_id():
+    response = client.delete("/todo", headers={"user-id":"20"})
+    assert response.status_code == 405
+    assert response.json()["detail"] == "Method Not Allowed"
