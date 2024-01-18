@@ -24,9 +24,9 @@ def add_new_user(
         return {"status": "error", "message": "Invalid email"}
 
     # check if email already exists
-    user_id = data.get_userid_from_email(email)
-    if user_id:
-        return {"status": "existing_user", "message": "Email already exists", "user_id": user_id}
+    user = data.get_user_data(email)
+    if user:
+        return {"status": "existing_user", "message": "Email already exists", "user_id": user["user_id"], "name": user["name"]}
     
     # add new user
     new_user_id = data.add_user(name, email)

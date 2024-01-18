@@ -38,13 +38,22 @@ def create_tables_if_not_exists():
         """))
         conn.commit()
 
-def get_userid_from_email(email: str) -> int | None:
+def get_user_data(email: str) -> dict | None:
     with engine.connect() as conn:
         result = conn.execute(
-            text("SELECT userid FROM users WHERE email = :email"),
+            text("SELECT * FROM users WHERE email = :email"),
             {"email": email}
         )
-        return result.scalar()
+        user = result.fetchone()
+        
+        if user:
+            return {
+                "user_id": user[0],
+                "name": user[1],
+                "email": user[2]
+            }
+        else:
+            return None
 
 def add_user(name: str, email: str) -> int | None:
     with engine.connect() as conn:
@@ -55,7 +64,7 @@ def add_user(name: str, email: str) -> int | None:
         conn.commit()
         return result.scalar()
 
-def check_user_exists(user_id: str) -> Any | None:
+def check_user_exists(user_id: int) -> Any | None:
     with engine.connect() as conn:
         result = conn.execute(
             text("SELECT EXISTS(SELECT 1 FROM users WHERE userid = :user_id)"),
@@ -63,7 +72,7 @@ def check_user_exists(user_id: str) -> Any | None:
         )
         return result.scalar()
 
-def get_single_todo(todo_id: int, user_id: str) -> dict | None:
+def get_single_todo(todo_id: int, user_id: int) -> dict | None:
     with engine.connect() as conn:
         result = conn.execute(
             text("SELECT todoid, title, description FROM todos WHERE todoid = :todo_id AND userid = :user_id"),
@@ -79,7 +88,7 @@ def get_single_todo(todo_id: int, user_id: str) -> dict | None:
         else:
             return None
 
-def get_all_todos(user_id: str) -> list[dict]:
+def get_all_todos(user_id: int) -> list[dict]:
     todos = []
     with engine.connect() as conn:
         result = conn.execute(
@@ -94,7 +103,7 @@ def get_all_todos(user_id: str) -> list[dict]:
             })
     return todos
 
-def add_todo(user_id: str, title: str, description: str) -> int | None:
+def add_todo(user_id: int, title: str, description: str) -> int | None:
     with engine.connect() as conn:
         result = conn.execute(
             text("INSERT INTO todos (userid, title, description) VALUES (:userid, :title, :description) RETURNING todoid"),
@@ -103,7 +112,7 @@ def add_todo(user_id: str, title: str, description: str) -> int | None:
         conn.commit()
         return result.scalar()
 
-def check_todo_exists(todo_id: int, user_id: str) -> bool | None:
+def check_todo_exists(todo_id: int, user_id: int) -> bool | None:
     with engine.connect() as conn:
         result = conn.execute(
             text("SELECT EXISTS(SELECT 1 FROM todos WHERE todoid = :todo_id AND userid = :user_id)"),
@@ -111,7 +120,7 @@ def check_todo_exists(todo_id: int, user_id: str) -> bool | None:
         )
         return result.scalar()
 
-def delete_todo(todo_id: int, user_id: str) -> None:
+def delete_todo(todo_id: int, user_id: int) -> None:
     with engine.connect() as conn:
         conn.execute(
             text("DELETE FROM todos WHERE todoid = :todo_id AND userid = :user_id"),
@@ -119,7 +128,7 @@ def delete_todo(todo_id: int, user_id: str) -> None:
         )
         conn.commit()
 
-def update_todo(user_id: str, todo_id: int, title: str, description: str) -> None:
+def update_todo(user_id: int, todo_id: int, title: str, description: str) -> None:
     with engine.connect() as conn:
         if title != "" and description != "":
             conn.execute(text(f"UPDATE todos SET title = '{title}', description = '{description}' WHERE todoid = {todo_id} AND userid = {user_id}"))
