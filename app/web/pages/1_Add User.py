@@ -45,10 +45,10 @@ if button:
             
             # if user already exists, set user_name to existing name
             if res["status"] == "existing_user":
-                st.success(f"User already exists!")            
+                st.success(f"User already exists! You can now proceed with your task.")            
                 user_name = res["name"]
             else:
-                st.success(f"User created successfully!")
+                st.success(f"User created successfully! You can now proceed with your task.")
 
             st.session_state.user_id = int(res['user_id'])
             st.session_state.user_name = user_name
